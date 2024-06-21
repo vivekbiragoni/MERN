@@ -128,3 +128,28 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+
+# Logs
+logs/
+*.log
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Environment variables
+.env
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
