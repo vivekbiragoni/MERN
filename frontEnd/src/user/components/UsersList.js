@@ -2,8 +2,9 @@ import React from "react";
 
 import "./UsersList.css";
 import UserItem from "./UserItem";
+
 const UsersList = (props) => {
-  if (props.UsersList.Length() === 0) {
+  if (props.item.Length === 0) {
     return (
       <div className="center">
         <h2>No User found</h2>
@@ -11,7 +12,7 @@ const UsersList = (props) => {
     );
   }
   return (
-    <ul>
+    <ul className="users-list">
       {props.item.map((user) => {
         return (
           <UserItem
