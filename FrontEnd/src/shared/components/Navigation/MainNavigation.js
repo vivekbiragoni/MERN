@@ -8,7 +8,7 @@ import Backdrop from "../UIElements/Backdrop";
 
 import "./MainNavigation.css";
 
-const MainNavigation = (props) => {
+const MainNavigation = () => {
   const [drawerIsOpen, setDrawerOpen] = useState(false);
 
   const openDrawerHandler = () => {
@@ -38,7 +38,7 @@ const MainNavigation = (props) => {
         </button>
 
         <h1 className="main_navigation__title">
-          <Link to="/">YourPlaces</Link>
+          <Link to="/">Your Places</Link>
         </h1>
 
         <nav className="main-navigation__header-nav">
