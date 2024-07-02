@@ -1,6 +1,12 @@
 import express from "express";
 
-import {getPlaceById, getPlaceByUserId, createPlace} from "../Controllers/places-controllers.js";
+import {
+  getPlaceById,
+  getPlaceByUserId,
+  createPlace,
+  updatePlaceById,
+  deletePlaceById,
+} from "../Controllers/places-controllers.js";
 
 const router = express.Router();
 
@@ -10,6 +16,7 @@ router.get("/user/:uid", getPlaceByUserId);
 
 router.post("/", createPlace);
 
-
+router.patch("/:pid", updatePlaceById);
+router.delete("/:pid", deletePlaceById);
 
 export default router;

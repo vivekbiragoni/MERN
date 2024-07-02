@@ -2,7 +2,7 @@ import {v4 as uuid} from "uuid";
 
 import HttpError from "../Model/http-error.js";
 
-const DUMMY_PLACES = [
+let DUMMY_PLACES = [
     {
       id: "p1",
       title: "Empire State Building",
@@ -64,7 +64,7 @@ const createPlace = (req, res, next) => {
 
     const createdPlace = {
         id: uuid(),
-        title: title,
+        title: title,  //just title is also fine, since both are same anyways
         description: description,
         location: location,
         address,
@@ -74,4 +74,27 @@ const createPlace = (req, res, next) => {
     res.status(201).json({place: createdPlace});
 };
 
-export  { getPlaceById ,getPlaceByUserId, createPlace};
+const updatePlaceById = (req, res, next) =>{
+    const {title, description,  address} = req.body;  
+    const placeId = req.params.pid;
+
+    const updatedPlace = {...DUMMY_PLACES.find(p => p.id == placeId )};
+    const placeIndex = DUMMY_PLACES.findIndex(p=> p.id===placeId);
+    updatedPlace.title = title;
+    updatedPlace.description = description;
+    updatedPlace.address = address;
+
+    DUMMY_PLACES[placeIndex]=updatedPlace;
+    res.status(200).json({place:updatedPlace});
+
+};
+
+const deletePlaceById = (req, res, next) => {
+    const placeId = req.params.pid;
+    DUMMY_PLACES = DUMMY_PLACES.filter(p => p.id !== placeId);
+    res.status(200).json({messsage: "Deleted Place"});
+};
+
+
+
+export  { getPlaceById ,getPlaceByUserId, createPlace, updatePlaceById, deletePlaceById};
