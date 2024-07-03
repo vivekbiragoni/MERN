@@ -1,5 +1,9 @@
 import HttpError from "../Model/http-error.js";
 import axios from "axios";
+
+import dotenv from 'dotenv';
+dotenv.config();
+
 const API_KEY = process.env.API_KEY;
 
 const getCoordsForAddress = async (address) => {
