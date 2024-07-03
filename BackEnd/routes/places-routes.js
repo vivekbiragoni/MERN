@@ -2,7 +2,7 @@ import express from "express";
 
 import {
   getPlaceById,
-  getPlaceByUserId,
+  getPlacesByUserId,
   createPlace,
   updatePlaceById,
   deletePlaceById,
@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.get("/:pid", getPlaceById);
 
-router.get("/user/:uid", getPlaceByUserId);
+router.get("/user/:uid", getPlacesByUserId);
 
 router.post("/", createPlace);
 
