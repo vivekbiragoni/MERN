@@ -1,6 +1,6 @@
 import mongoose, { model } from "mongoose";
 import mongooseUniqueValidator from "mongoose-unique-validator";
-// import place from "./place";
+
 
 const Schema = mongoose.Schema;
 

@@ -1,4 +1,3 @@
-import { v4 as uuid } from "uuid";
 import { validationResult } from "express-validator";
 import HttpError from "../Model/http-error.js";
 import getCoordsForAddress from "../util/location.js";
@@ -55,7 +54,9 @@ const getPlacesByUserId = async (req, res, next) => {
 const createPlace = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(new HttpError("Invalid inputs passed, please check your data", 422));
+    return next(
+      new HttpError("Invalid inputs passed, please check your data", 422)
+    );
   }
 
   const { title, description, address, creator } = req.body;
@@ -71,7 +72,8 @@ const createPlace = async (req, res, next) => {
     title,
     description,
     location: coordinates,
-    image: "https://cdn1.byjus.com/wp-content/uploads/blog/2023/03/17131610/STIM_Happy-Baby-Elephant-Running-scaled.jpeg",
+    image:
+      "https://cdn1.byjus.com/wp-content/uploads/blog/2023/03/17131610/STIM_Happy-Baby-Elephant-Running-scaled.jpeg",
     address,
     creator,
   });
@@ -80,7 +82,9 @@ const createPlace = async (req, res, next) => {
   try {
     user = await User.findById(creator);
     if (!user) {
-      return next(new HttpError("Could not find user for the provided ID", 404));
+      return next(
+        new HttpError("Could not find user for the provided ID", 404)
+      );
     }
   } catch (err) {
     return next(new HttpError("Creating place failed, please try again", 500));
@@ -99,7 +103,6 @@ const createPlace = async (req, res, next) => {
 
   res.status(201).json({ place: createdPlace });
 };
-
 
 const updatePlaceById = async (req, res, next) => {
   const errors = validationResult(req);
@@ -153,7 +156,7 @@ const deletePlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
   let place;
   try {
-    place = await Place.findById(placeId); // finding the place to be deleted
+    place = await Place.findById(placeId).populate("creator"); // finding the place to be deleted and the user who owns that page
     if (!place) {
       const error = new HttpError("Could not find a place for this id.", 404);
       return next(error);
@@ -166,7 +169,12 @@ const deletePlaceById = async (req, res, next) => {
     return next(error);
   }
   try {
-    await place.deleteOne(); // actual removal of the place
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await place.deleteOne({ session: sess }); // actual removal of the place
+    place.creator.places.pull(place);
+    await place.creator.save({session:sess});
+    await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(
       "Something went wrong, Could not delete the place.",
