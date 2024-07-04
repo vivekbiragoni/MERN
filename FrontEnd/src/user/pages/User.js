@@ -1,18 +1,48 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import UsersList from "../components/UsersList";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 
 const User = () => {
-  const USERS = [
-    {
-      id: "u1",
-      name: "Vivek",
-      // image: "/meGithubProf.jpeg", // Adjusted path
-      image: "https://avatars.githubusercontent.com/u/104636857?s=400&u=c3609abd423f7ea5cd910f5d573c9bf80be3add7&v=4", 
-      places: 3
-    },
-  ];
-  
-  return <UsersList item={USERS} />;
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState();
+  const [loadedUsers, setLoadedUsers] = useState();
+
+  useEffect(() => {
+    //dont user async with useEffect
+    const sendRequest = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("http://localhost:5000/api/users");
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(responseData.message);
+        }
+        setLoadedUsers(responseData.users);
+      } catch (err) {
+        setError(err.message);
+      }
+      setIsLoading(false);
+    };
+    sendRequest();
+  }, []); //no dependencies added so wont be rerun upon every time this component reloads
+
+  const errorHandler = () => {
+    setError(null);
+  };
+  return (
+    <React.Fragment>
+      <ErrorModal error={error} onClear={errorHandler} />
+      {isLoading && (
+        <div className="center">
+          <LoadingSpinner />
+        </div>
+      )}
+      {!isLoading && loadedUsers && <UsersList item={loadedUsers} />};
+    </React.Fragment>
+  );
 };
 
 export default User;
