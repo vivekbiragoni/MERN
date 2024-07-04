@@ -4,35 +4,7 @@ import HttpError from "../Model/http-error.js";
 import getCoordsForAddress from "../util/location.js";
 import Place from "../Model/place.js";
 import mongoose from "mongoose";
-
-let DUMMY_PLACES = [
-  {
-    id: "p1",
-    title: "Empire State Building",
-    description: "One of the most famous skyscrapers in the world!",
-    imageUrl:
-      "https://assets.simpleviewinc.com/simpleview/image/upload/c_limit,h_1200,q_75,w_1200/v1/crm/newyorkstate/GettyImages-486334510_CC36FC20-0DCE-7408-77C72CD93ED4A476-cc36f9e70fc9b45_cc36fc73-07dd-b6b3-09b619cd4694393e.jpg",
-    address: "20 W 34th St, New York, NY 10118, United States",
-    location: {
-      lat: 40.748817,
-      lng: -73.985428,
-    },
-    creator: "u1",
-  },
-  {
-    id: "p2",
-    title: "Statue of Liberty",
-    description: "A colossal neoclassical sculpture on Liberty Island.",
-    imageUrl:
-      "https://i.pinimg.com/736x/d3/26/66/d32666c8a61e169175e1ff99e05902e5.jpg",
-    address: "Liberty Island, New York, NY 10004, United States",
-    location: {
-      lat: 40.689247,
-      lng: -74.044502,
-    },
-    creator: "u2",
-  },
-];
+import User from "../Model/user.js";
 
 const getPlaceById = async (req, res, next) => {
   const placeId = req.params.pid;
@@ -83,13 +55,10 @@ const getPlacesByUserId = async (req, res, next) => {
 const createPlace = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(
-      new HttpError("Invalid inputs passed, please check your data", 422)
-    );
+    return next(new HttpError("Invalid inputs passed, please check your data", 422));
   }
 
   const { title, description, address, creator } = req.body;
-  // const title = req.body.title; llly
 
   let coordinates;
   try {
@@ -99,22 +68,38 @@ const createPlace = async (req, res, next) => {
   }
 
   const createdPlace = new Place({
-    title, //just title is also fine, since both are same anyways
+    title,
     description,
     location: coordinates,
-    image:
-      "https://cdn1.byjus.com/wp-content/uploads/blog/2023/03/17131610/STIM_Happy-Baby-Elephant-Running-scaled.jpeg",
+    image: "https://cdn1.byjus.com/wp-content/uploads/blog/2023/03/17131610/STIM_Happy-Baby-Elephant-Running-scaled.jpeg",
     address,
     creator,
   });
+
+  let user;
   try {
-    await createdPlace.save();
+    user = await User.findById(creator);
+    if (!user) {
+      return next(new HttpError("Could not find user for the provided ID", 404));
+    }
   } catch (err) {
-    const error = new HttpError("Creating place failed, please try again", 500);
-    return next(error);
+    return next(new HttpError("Creating place failed, please try again", 500));
   }
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await createdPlace.save({ session: sess });
+    user.places.push(createdPlace); // Assuming user.places is an array
+    await user.save({ session: sess });
+    await sess.commitTransaction();
+  } catch (err) {
+    return next(new HttpError("Creating place failed, please try again", 500));
+  }
+
   res.status(201).json({ place: createdPlace });
 };
+
 
 const updatePlaceById = async (req, res, next) => {
   const errors = validationResult(req);
